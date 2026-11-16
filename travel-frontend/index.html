@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Admin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ===== Нэвтрэх хуудас ===== -->
+  <section id="login-view" class="login-wrap">
+    <main class="card">
+      <h1>Админ нэвтрэх</h1>
+
+      <form id="login-form" novalidate>
+        <label for="email">Имэйл</label>
+        <input id="email" name="email" type="email" autocomplete="username" required>
+
+        <label for="password">Нууц үг</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+        <button id="submit-btn" type="submit">Нэвтрэх</button>
+      </form>
+
+      <p id="message" class="message" role="alert"></p>
+    </main>
+  </section>
+
+  <!-- ===== Нэвтэрсний дараах самбар ===== -->
+  <div id="app-view" class="layout" hidden>
+    <aside class="sidebar">
+      <div class="brand">Travel Admin</div>
+      <nav id="menu">
+        <a href="#dashboard" data-page="dashboard">Хяналт</a>
+        <a href="#tours" data-page="tours">Аялал</a>
+        <a href="#bookings" data-page="bookings">Захиалга</a>
+        <a href="#customers" data-page="customers">Үйлчлүүлэгч</a>
+        <a href="#guides" data-page="guides">Хөтөч</a>
+        <a href="#forecast" data-page="forecast">Эрэлт таамаглах</a>
+        <a href="#facebook" data-page="facebook">Facebook</a>
+      </nav>
+      <button id="logout-btn" class="logout">Гарах</button>
+    </aside>
+
+    <main class="content">
+      <!-- Хяналт -->
+      <section id="page-dashboard" class="page">
+        <h2>Хяналт</h2>
+        <p id="stats-error" class="message error"></p>
+
+        <div class="stats">
+          <div class="stat"><span class="stat-label">Аялал</span><span id="stat-tours" class="stat-value">–</span></div>
+          <div class="stat"><span class="stat-label">Захиалга</span><span id="stat-bookings" class="stat-value">–</span></div>
+          <div class="stat"><span class="stat-label">Хүлээгдэж буй</span><span id="stat-pending" class="stat-value">–</span></div>
+          <div class="stat"><span class="stat-label">Нийт орлого</span><span id="stat-revenue" class="stat-value">–</span></div>
+        </div>
+
+        <h3>Батлагдаагүй сүүлийн 5 захиалга</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>№</th><th>Үйлчлүүлэгч</th><th>Аялал</th><th>Хүн</th><th>Огноо</th></tr>
+            </thead>
+            <tbody id="pending-body"></tbody>
+          </table>
+        </div>
+
+        <h3>Эрэлттэй 5 аялал</h3>
+        <p id="top-demand-error" class="message error"></p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Аялал</th><th>Чиглэл</th><th class="num">Бодит захиалга</th><th class="num">Таамаглал</th></tr>
+            </thead>
+            <tbody id="top-demand-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Аялал -->
+      <section id="page-tours" class="page" hidden>
+        <h2>Аялал</h2>
+        <div id="tours-crud"></div>
+      </section>
+
+      <!-- Захиалга -->
+      <section id="page-bookings" class="page" hidden>
+        <h2>Захиалга</h2>
+        <div id="bookings-crud"></div>
+      </section>
+
+      <!-- Үйлчлүүлэгч -->
+      <section id="page-customers" class="page" hidden>
+        <h2>Үйлчлүүлэгч</h2>
+        <div id="customers-crud"></div>
+      </section>
+
+      <!-- Хөтөч -->
+      <section id="page-guides" class="page" hidden>
+        <h2>Хөтөч</h2>
+        <div id="guides-crud"></div>
+      </section>
+
+      <!-- Эрэлт таамаглах -->
+      <section id="page-forecast" class="page" hidden>
+        <h2>Эрэлт таамаглах</h2>
+
+        <div class="forecast-grid">
+          <form id="predict-form" class="panel">
+            <h3>Шинэ аяллын эрэлт</h3>
+            <label for="pf-price">Өдрийн үнэ (₮)</label>
+            <input id="pf-price" name="price_per_day" type="number" min="1" step="any" required value="200000">
+
+            <label for="pf-exp">Хөтөчийн туршлага (жил)</label>
+            <input id="pf-exp" name="guide_experience" type="number" min="0" max="80" step="1" required value="5">
+
+            <label for="pf-days">Хоног</label>
+            <input id="pf-days" name="days" type="number" min="1" step="1" required value="5">
+
+            <button id="predict-btn" type="submit">Таамаглах</button>
+          </form>
+
+          <div class="panel predict-result">
+            <span class="stat-label">Таамагласан захиалга</span>
+            <span id="predict-value" class="predict-value">–</span>
+            <p id="predict-note" class="muted">Утгуудаа оруулаад «Таамаглах» дарна уу.</p>
+          </div>
+        </div>
+
+        <h3>Хамгийн их захиалгатай 10 аялал: бодит ба таамаглал</h3>
+        <p id="demand-error" class="message error"></p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Аялал</th><th class="num">Хоног</th><th class="num">Өдрийн үнэ</th>
+                <th>Хөтөч</th><th class="num">Бодит</th><th class="num">Таамаглал</th><th class="num">Зөрүү</th>
+              </tr>
+            </thead>
+            <tbody id="demand-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Facebook -->
+      <section id="page-facebook" class="page" hidden>
+        <h2>Facebook</h2>
+        <div class="placeholder">Тун удахгүй</div>
+      </section>
+
+      <!-- Бусад цэс -->
+      <section id="page-soon" class="page" hidden>
+        <h2 id="soon-title"></h2>
+        <div class="placeholder">Удахгүй</div>
+      </section>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="crud.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

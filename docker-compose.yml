@@ -1,0 +1,49 @@
+# Гурван контейнерийг нэг дор асаах тохиргоо.
+# Нууц утгууд (DB_PASSWORD, JWT_SECRET, EC2_IP) энэ хавтасны .env файлаас уншигдана.
+
+services:
+  # ---------- 1. Өгөгдлийн сан ----------
+  db:
+    image: postgres:16                            # Албан ёсны PostgreSQL 16 image
+    restart: unless-stopped                       # Унавал өөрөө дахин асна
+    environment:
+      POSTGRES_USER: student                      # Хэрэглэгчийн нэр
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD .env-д алга}   # Нууц үг .env-ээс
+      POSTGRES_DB: travel                         # Анх асахад үүсгэх сангийн нэр
+    volumes:
+      - pgdata:/var/lib/postgresql/data           # Өгөгдлийг контейнер устсан ч хадгална
+      - ./synthetic_data.sql:/docker-entrypoint-initdb.d/01_synthetic_data.sql:ro  # Анх асахад автоматаар ачаалагдана
+    # ports: хэсэг зориуд байхгүй. Сан зөвхөн дотоод сүлжээнд, гаднаас хандах боломжгүй
+    healthcheck:                                  # Сан хүсэлт хүлээж авахад бэлэн эсэхийг шалгана
+      test: ["CMD-SHELL", "pg_isready -U student -d travel"]
+      interval: 5s                                # 5 секунд тутам шалгана
+      timeout: 5s                                 # Хариу 5 секундэд ирэхгүй бол алдаа
+      retries: 10                                 # 10 удаа бүтэлгүйтвэл "өвчтэй" гэж үзнэ
+
+  # ---------- 2. Backend (FastAPI) ----------
+  backend:
+    build: ./travel-backend                       # Тэр хавтас дахь Dockerfile-аар image бүтээнэ
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://student:${DB_PASSWORD}@db:5432/travel  # "db" = дээрх service-ийн нэр
+      ALLOWED_ORIGINS: http://${EC2_IP:?EC2_IP .env-д алга}            # Зөвхөн энэ хаягаас ирсэн хүсэлтийг зөвшөөрнө
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET .env-д алга}                # main.py үүнгүйгээр асахгүй
+    ports:
+      - "8000:8000"                               # Компьютерийн 8000 → контейнерийн 8000
+    depends_on:
+      db:
+        condition: service_healthy                # Сан бэлэн болсны дараа л асна
+
+  # ---------- 3. Frontend (nginx) ----------
+  frontend:
+    image: nginx:alpine                           # Жижиг, хурдан вэб сервер
+    restart: unless-stopped
+    volumes:
+      - ./travel-frontend:/usr/share/nginx/html:ro  # HTML/JS/CSS файлуудыг nginx-д өгнө (зөвхөн уншина)
+    ports:
+      - "80:80"                                   # Компьютерийн 80 → nginx-ийн 80
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:                                         # Docker өөрөө удирддаг хадгалах сан

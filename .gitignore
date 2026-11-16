@@ -1,0 +1,22 @@
+# ---- Нууц тохиргоо: GitHub-д хэзээ ч оруулахгүй ----
+.env
+**/.env
+# Харин загвар файлыг оруулна (дотор нь нууц утга байхгүй)
+!.env.example
+!**/.env.example
+
+# ---- Python-ийн түр файлууд ----
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# ---- Систем, засварлагчийн хог файлууд ----
+.DS_Store
+__MACOSX/
+Thumbs.db
+.vscode/
+
+# ---- ML загвар заавал орох ёстой ----
+!demand_model.joblib
+!**/demand_model.joblib
